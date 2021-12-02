@@ -3,11 +3,13 @@
 
 #include <iostream>
 
-// create vertex shader (string)
-const std::string vertex_shader = "";
+#include "shader_utils.h"
+
+// create vertex shader
+const std::string vertex_shader = shader_utils::get_shader_from_file("shaders/shader.vert");
 
 // create fragment shader
-const std::string fragment_shader = "";
+const std::string fragment_shader = shader_utils::get_shader_from_file("shaders/shader.frag");
 
 
 
