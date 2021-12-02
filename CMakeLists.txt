@@ -8,7 +8,7 @@ project(Fractal_Visualization)
 find_package(SFML 2.5 COMPONENTS window system REQUIRED)
 find_package(OpenGL REQUIRED)
 
-add_executable(Fractal_Visualization fractal-visualization.cpp)
+add_executable(Fractal_Visualization main.cpp)
 
 target_link_libraries(Fractal_Visualization sfml-system sfml-window GL)
 
