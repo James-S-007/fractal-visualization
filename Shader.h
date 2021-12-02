@@ -26,3 +26,4 @@
             std::string get_shader_from_file(const std::string file_path);
             bool compile_shader(const std::string& shader_code);
     };
+    
