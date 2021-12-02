@@ -10,6 +10,8 @@ find_package(OpenGL REQUIRED)
 
 add_executable(Fractal_Visualization main.cpp)
 
-target_link_libraries(Fractal_Visualization sfml-system sfml-window GL)
+add_library(shader_utils STATIC shader_utils.cpp)
+
+target_link_libraries(Fractal_Visualization shader_utils sfml-system sfml-window GL)
 
 include(GNUInstallDirs)
