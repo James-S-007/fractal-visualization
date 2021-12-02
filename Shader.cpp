@@ -4,15 +4,14 @@
 
 #include "Shader.h"
 
-Shader::Shader(const std::string file_path, unsigned int gl_program_id, ShaderType gl_shader_type) : program_id(gl_program_id), shader_type(gl_shader_type) {
+Shader::Shader(const std::string file_path, unsigned int gl_program_id, ShaderType gl_shader_type) : program_id(gl_program_id), shader_type(gl_shader_type), valid(false) {
     const std::string shader_code = get_shader_from_file(file_path);
     if (shader_code.empty()) {
         // do something
-    }
-
-    bool success = compile_shader(shader_code);
-    if (!success) {
-        // do something
+        bool success = compile_shader(shader_code);
+        if (success) {
+            valid = true;
+        }
     }
 }
 
