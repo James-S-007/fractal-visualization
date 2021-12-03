@@ -8,7 +8,7 @@
 
 
 int main() {
-    sf::Window window(sf::VideoMode(1080, 1080), "Fractal Visualization", sf::Style::Default, sf::ContextSettings(24, 0U, 0U, 4, 3));
+    sf::Window window(sf::VideoMode(600, 600), "Fractal Visualization", sf::Style::Default, sf::ContextSettings(24, 0U, 0U, 4, 3));
     window.setVerticalSyncEnabled(true);
     window.setActive(true);
 
@@ -61,7 +61,7 @@ int main() {
     bool success = Shader::link_shaders(program_id);
     if (!success) {
         std::cerr << "Failed to link shaders, exiting..." << std::endl;
-        return EXIT_FAILURE;
+        return EXIT_FAILURE;  // exit if failed to link shaders with program
     }
     
 
@@ -85,11 +85,10 @@ int main() {
         glUseProgram(program_id);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        // end the current frame (internally swaps the front and back buffers)
         window.display();
     }
 
-    // release resources
+    // Release resources
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &VAO);
     glDeleteBuffers(1, &EBO);

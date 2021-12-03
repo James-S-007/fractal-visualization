@@ -21,9 +21,7 @@ Shader::~Shader() {
 
 
 // Input: file path to shader
-// Returns:
-    // Empty string if unable to read from file
-    // std::string containing shader
+// Returns: std::string containing shader or empty string if unable to read from file
 std::string Shader::get_shader_from_file(const std::string file_path) {
     std::stringstream shader;
     std::ifstream file(file_path, std::ios::in);
@@ -38,7 +36,8 @@ std::string Shader::get_shader_from_file(const std::string file_path) {
     return shader.str();
 }
 
-
+// Input: string of GLSL shader code
+// Returns: true if successfully compiled, false if error
 bool Shader::compile_shader(const std::string& shader_code) {
     switch (shader_type) {
         case ShaderType::Vertex:
@@ -75,6 +74,8 @@ bool Shader::compile_shader(const std::string& shader_code) {
     return true;
 }
 
+// Input: program_id (static function because does not explicitly use shader)
+// Returns: true if successfully linked shaders with program, false if error
 bool Shader::link_shaders(unsigned int program_id) {
     glLinkProgram(program_id);
     int success;
