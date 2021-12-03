@@ -5,13 +5,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 project(Fractal_Visualization)
 
-find_package(SFML 2.5 COMPONENTS window system REQUIRED)
-find_package(OpenGL REQUIRED)
-
 add_executable(Fractal_Visualization main.cpp)
 
-add_library(shader_utils STATIC shader_utils.cpp)
+find_package(SFML 2.5 COMPONENTS window system REQUIRED)
+find_package(OpenGL 3.3 REQUIRED COMPONENTS OpenGL)
+find_package(GLEW REQUIRED)
 
-target_link_libraries(Fractal_Visualization shader_utils sfml-system sfml-window GL)
+add_dependencies(Fractal_Visualization OpenGL::OpenGL)
 
-include(GNUInstallDirs)
+add_library(Shader STATIC Shader.cpp)
+target_link_libraries(Shader GLEW)
+
+target_link_libraries(Fractal_Visualization Shader sfml-system sfml-window OpenGL::OpenGL GLEW)
+
+# include(GNUInstallDirs)
