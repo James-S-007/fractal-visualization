@@ -1,16 +1,24 @@
 #include <iostream>
 
 #include <GL/glew.h>
-#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
 
 #include "Shader.h"
 
+    
 
 int main() {
-    sf::Window window(sf::VideoMode(800, 800), "Fractal Visualization", sf::Style::Default, sf::ContextSettings(24, 0U, 0U, 4, 3));
+    sf::RenderWindow window(sf::VideoMode(1080, 1080), "Fractal Visualization", sf::Style::Default, sf::ContextSettings(24, 0U, 0U, 4, 3));
     window.setVerticalSyncEnabled(true);
     window.setActive(true);
+
+    GLenum glew_err = glewInit();
+    if (glew_err != GLEW_OK) {
+        std::cerr << "GLEW initialization failed with error code: " << glew_err << std::endl;
+        std::cout << "Exiting..." << std::endl;
+        return EXIT_FAILURE;
+    }
 
     // Init OpenGL Structures
     const float vertices[] = {
@@ -63,6 +71,9 @@ int main() {
         glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear buffers
         glViewport(0, 0, window.getSize().x, window.getSize().y);  // TODO(James): is this necessary?
+
+        window.pushGLStates();
+        window.popGLStates();
 
         glUseProgram(program_id);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

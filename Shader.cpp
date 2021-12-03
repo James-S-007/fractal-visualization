@@ -63,9 +63,9 @@ bool Shader::compile_shader(const std::string& shader_code) {
     // check for errors
     int success;
     glGetShaderiv(shader_id, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        GLchar error_msg[1024];
-        glGetProgramInfoLog(shader_id, sizeof(error_msg), nullptr, error_msg);
+    if (success == GL_FALSE) {
+        GLchar error_msg[1024] = { 0 };
+        glGetShaderInfoLog(shader_id, sizeof(error_msg), nullptr, error_msg);
         std::cerr << "Failed to compile shader with following error..." << std::endl;
         std::cerr << error_msg << std::endl;
         return false;
