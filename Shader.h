@@ -15,6 +15,7 @@
             Shader(const std::string file_path, unsigned int gl_program_id, ShaderType gl_shader_type);
             ~Shader();
             bool is_valid() const { return valid; }
+            static bool link_shaders(unsigned int program_id);
         private:
             // -members- //
             const unsigned int program_id;

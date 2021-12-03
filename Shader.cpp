@@ -74,3 +74,18 @@ bool Shader::compile_shader(const std::string& shader_code) {
     glAttachShader(program_id, shader_id);
     return true;
 }
+
+bool Shader::link_shaders(unsigned int program_id) {
+    glLinkProgram(program_id);
+    int success;
+    glGetProgramiv(program_id, GL_LINK_STATUS, &success);
+    if (success == GL_FALSE) {
+        GLchar error_msg[1024] = { 0 };
+        glGetProgramInfoLog(program_id, sizeof(error_msg), nullptr, error_msg);
+        std::cerr << "Failed to link shaders with program" << std::endl;
+        std::cerr << error_msg << std::endl;
+        return false;
+    }
+
+    return true;
+}

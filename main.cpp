@@ -6,10 +6,9 @@
 
 #include "Shader.h"
 
-    
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(1080, 1080), "Fractal Visualization", sf::Style::Default, sf::ContextSettings(24, 0U, 0U, 4, 3));
+    sf::Window window(sf::VideoMode(1080, 1080), "Fractal Visualization", sf::Style::Default, sf::ContextSettings(24, 0U, 0U, 4, 3));
     window.setVerticalSyncEnabled(true);
     window.setActive(true);
 
@@ -31,7 +30,7 @@ int main() {
     const unsigned int indices[] = {
         0, 1, 2,
         0, 3, 1
-    };
+    }; 
 
     unsigned int VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -47,6 +46,8 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
+    glEnable(GL_DEPTH_TEST);
+
     // Create OpenGL program and init shaders
     GLuint program_id = glCreateProgram();
     Shader vertex_shader("shaders/shader.vert", program_id, ShaderType::Vertex);
@@ -56,12 +57,20 @@ int main() {
         return EXIT_FAILURE;  // exit if either shader failed during initialization
     }
 
+    // Attempt to link program
+    bool success = Shader::link_shaders(program_id);
+    if (!success) {
+        std::cerr << "Failed to link shaders, exiting..." << std::endl;
+        return EXIT_FAILURE;
+    }
+    
+
     bool active = true;
     while (active) {
         sf::Event event;
         while (window.pollEvent(event))
         {
-            if (event.type == sf::Event::Closed) {
+            if (event.type == sf::Event::Closed || (event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)) {
                 active = false;  // end program
             } else if (event.type == sf::Event::Resized) {
                 glViewport(0, 0, event.size.width, event.size.height);  // adjust window size
@@ -70,11 +79,9 @@ int main() {
 
         glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear buffers
-        glViewport(0, 0, window.getSize().x, window.getSize().y);  // TODO(James): is this necessary?
+        // glViewport(0, 0, window.getSize().x, window.getSize().y);  // TODO(James): is this necessary?
 
-        window.pushGLStates();
-        window.popGLStates();
-
+        glBindVertexArray(VAO);
         glUseProgram(program_id);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
@@ -91,4 +98,3 @@ int main() {
 
     return 0;
 }
-
