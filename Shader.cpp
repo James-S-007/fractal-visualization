@@ -6,13 +6,17 @@
 
 Shader::Shader(const std::string file_path, unsigned int gl_program_id, ShaderType gl_shader_type) : program_id(gl_program_id), shader_type(gl_shader_type), valid(false) {
     const std::string shader_code = get_shader_from_file(file_path);
-    if (shader_code.empty()) {
-        // do something
+    if (!shader_code.empty()) {
         bool success = compile_shader(shader_code);
         if (success) {
             valid = true;
         }
     }
+}
+
+Shader::~Shader() {
+    glDetachShader(program_id, shader_id);
+    glDeleteShader(shader_id);
 }
 
 
@@ -43,6 +47,9 @@ bool Shader::compile_shader(const std::string& shader_code) {
         case ShaderType::Fragment:
             shader_id = glCreateShader(GL_FRAGMENT_SHADER);
             break;
+        default:
+            std::cerr << "Invalid shader type!" << std::endl;
+            return false;
     }
 
     const GLchar* sources[1];
