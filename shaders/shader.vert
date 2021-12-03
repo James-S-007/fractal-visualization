@@ -1,11 +1,6 @@
-#version 330
-attribute vec3 position;
-attribute vec2 texCoord;
-uniform mat4 pvm;
-
-varying vec2 uv;
+#version 330 core
+layout (location = 0) in vec3 pos;
 
 void main() {
-	gl_Position = pvm * vec4(position, 1.0);
-	uv = texCoord;
+    gl_Position = vec4(pos.xyz, 1.0);
 }
