@@ -85,7 +85,7 @@ int main() {
             } else if (event.type == sf::Event::Resized) {
                 glViewport(0, 0, event.size.width, event.size.height);  // adjust window size
             } else if (event.type == sf::Event::MouseWheelScrolled) {
-                zoom = zoom * (1 + .07 * event.mouseWheelScroll.delta);
+                zoom = zoom * (1 - .07 * event.mouseWheelScroll.delta);
                 zoom = (zoom > 1.0f) ? 1.0f : zoom;
                 zoom = (zoom < .00001f) ? .00001f: zoom;
                 glUniform1f(glGetUniformLocation(program_id, "zoom"), zoom);

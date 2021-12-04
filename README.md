@@ -21,4 +21,4 @@ cmake --build .
 | Mouse Scroll Wheel | Zoom |
 | Left Mouse Click Drag | Pan |
 | r | Reset zoom and frame to origin |
-| q | Quit program |
+| esc | Quit program |
