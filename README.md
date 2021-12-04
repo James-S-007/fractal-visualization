@@ -12,6 +12,5 @@
 mkdir build && cd build
 cmake ..
 cmake --build .
-cd ..
-./build/Fractal_Visualization
+./Fractal_Visualization
 ```
