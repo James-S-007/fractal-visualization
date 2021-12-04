@@ -22,15 +22,15 @@ int main() {
     // Init OpenGL Structures
     const float vertices[] = {
         -1.0f, -1.0f, 0.0f,
-        1.0f, 1.0f, 0.0f,
         -1.0f, 1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f   
+        1.0f, 1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f
     };
-    
-    const unsigned int indices[] = {
+
+    const unsigned int indices[] = {  // two triangles across the screen
         0, 1, 2,
-        0, 3, 1
-    }; 
+        2, 3, 0
+    };
 
     unsigned int VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -63,8 +63,12 @@ int main() {
         std::cerr << "Failed to link shaders, exiting..." << std::endl;
         return EXIT_FAILURE;  // exit if failed to link shaders with program
     }
-    
 
+    // Define uniforms
+    float zoom = 1;
+    glUniform1f(glGetUniformLocation(program_id, "zoom"), zoom);
+
+    bool panning = false;  // used to enable drag pan control
     bool active = true;
     while (active) {
         sf::Event event;
@@ -74,6 +78,15 @@ int main() {
                 active = false;  // end program
             } else if (event.type == sf::Event::Resized) {
                 glViewport(0, 0, event.size.width, event.size.height);  // adjust window size
+            } else if (event.type == sf::Event::MouseWheelScrolled) {
+                zoom = zoom + .02 * zoom * event.mouseWheelScroll.delta;
+                zoom = (zoom >= 1.0f) ? 1.0f : zoom;
+                zoom = (zoom <= .001f) ? .001f: zoom;
+                glUniform1f(glGetUniformLocation(program_id, "zoom"), zoom);
+            } else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton == sf::Mouse::Button::Left) {
+                panning = true;             
+            } else if (event.type == sf::Event::MouseMoved && panning) {
+                
             }
         }
 
