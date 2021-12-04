@@ -4,6 +4,8 @@ in vec4 gl_FragCoord;
 out vec4 frag_color;
 
 uniform float zoom;
+uniform float frame_x;
+uniform float frame_y;
 
 #define MAX_ITERATIONS 50
  
@@ -11,11 +13,8 @@ uniform float zoom;
 // https://physicspython.wordpress.com/2020/02/16/visualizing-the-mandelbrot-set-using-opengl-part-1/
 
 int get_iterations() {
-	// float zoom = 1.0f;  // TODO(James): make these configurable
-	float center_x = 0.0f;
-	float center_y = 0.0f;
-    float real = ((gl_FragCoord.x / 600.0f - 0.5f) * zoom + center_x) * 5.0;
-    float imag = ((gl_FragCoord.y / 600.0f - 0.5f) * zoom + center_y) * 5.0;
+    float real = ((gl_FragCoord.x / 600.0f - 0.5f) * zoom + frame_x) * 5.0;
+    float imag = ((gl_FragCoord.y / 600.0f - 0.5f) * zoom + frame_y) * 5.0;
  
     int iterations = 0;
     float const_real = real;
