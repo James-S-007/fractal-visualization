@@ -106,6 +106,13 @@ int main() {
                 mouse_y = event.mouseMove.y;
                 glUniform1f(glGetUniformLocation(program_id, "frame_x"), frame_x);
                 glUniform1f(glGetUniformLocation(program_id, "frame_y"), frame_y);
+            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::R) {
+                zoom = 1; // reset zoom and frame
+                frame_x = 0;
+                frame_y = 0;
+                glUniform1f(glGetUniformLocation(program_id, "zoom"), zoom);
+                glUniform1f(glGetUniformLocation(program_id, "frame_x"), frame_x);
+                glUniform1f(glGetUniformLocation(program_id, "frame_y"), frame_y);
             }
         }
 
