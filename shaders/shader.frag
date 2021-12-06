@@ -15,6 +15,9 @@ uniform float frame_y;
 int get_iterations() {
     float real = ((gl_FragCoord.x / 600.0f - 0.5f) * zoom + frame_x) * 5.0;
     float imag = ((gl_FragCoord.y / 600.0f - 0.5f) * zoom + frame_y) * 5.0;
+    // TODO: For julia set, you can change/vary these
+    //float real = 0;
+    //float imag = 0;
  
     int iterations = 0;
     float const_real = real;
