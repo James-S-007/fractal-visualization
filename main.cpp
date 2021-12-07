@@ -7,9 +7,12 @@
 #include "Shader.h"
 #include "WindowHandler.hpp"
 
+#define WINDOW_X 600 // starting window dimensions
+#define WINDOW_Y 600
+
 
 int main() {
-    sf::Window window(sf::VideoMode(600, 600), "Fractal Visualization", sf::Style::Default, sf::ContextSettings(24, 0U, 0U, 4, 3));
+    sf::Window window(sf::VideoMode(WINDOW_X, WINDOW_Y), "Fractal Visualization", sf::Style::Default, sf::ContextSettings(24, 0U, 0U, 4, 3));
     window.setVerticalSyncEnabled(true);
     window.setActive(true);
 
@@ -52,7 +55,7 @@ int main() {
     // Create OpenGL program and init shaders
     GLuint program_id = glCreateProgram();
     Shader vertex_shader("shaders/shader.vert", program_id, ShaderType::Vertex);
-    Shader fragment_shader("shaders/shader.frag", program_id, ShaderType::Fragment);
+    Shader fragment_shader("shaders/mandelbrot.frag", program_id, ShaderType::Fragment);
     if (!(vertex_shader.is_valid() && fragment_shader.is_valid())) {
         std::cerr << "Shader initialization failed, exiting..." << std::endl;
         return EXIT_FAILURE;  // exit if either shader failed during initialization
@@ -66,8 +69,7 @@ int main() {
     }
 
     // Define uniforms
-    WindowState window_state(program_id);
-    window_state.update_uniforms();
+    WindowState window_state(program_id, window.getSize().x, window.getSize().y);
 
     while (window_state.window_active) {
         sf::Event event;
@@ -77,7 +79,6 @@ int main() {
 
         glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear buffers
-        // glViewport(0, 0, window.getSize().x, window.getSize().y);  // TODO(James): is this necessary?
 
         glBindVertexArray(VAO);
         glUseProgram(program_id);

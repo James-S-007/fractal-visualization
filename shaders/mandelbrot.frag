@@ -6,6 +6,8 @@ out vec4 frag_color;
 uniform float zoom;
 uniform float frame_x;
 uniform float frame_y;
+uniform int width;   // width of window
+uniform int height;  // height of window
 
 #define MAX_ITERATIONS 50
  
@@ -17,8 +19,8 @@ uniform float frame_y;
 
 
 int calc_iterations() {
-    float x = ((gl_FragCoord.x / 600.0f - 0.5f) * zoom + frame_x) * 5.0;
-    float y = ((gl_FragCoord.y / 600.0f - 0.5f) * zoom + frame_y) * 5.0;
+    float x = ((gl_FragCoord.x / float(width) - 0.5f) * zoom + frame_x) * 5.0;
+    float y = ((gl_FragCoord.y / float(height) - 0.5f) * zoom + frame_y) * 5.0;
  
     int iterations = 0;
     float xc = x;
