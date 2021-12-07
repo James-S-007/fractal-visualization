@@ -6,14 +6,18 @@
 
     enum class ShaderType {
         Vertex,
-        Fragment
+        Fragment,
+        NONE
     };
 
     class Shader {
         public:
             // -methods- //
+            Shader(unsigned int gl_program_id);
             Shader(const std::string file_path, unsigned int gl_program_id, ShaderType gl_shader_type);
             ~Shader();
+            void init(const std::string file_path, ShaderType gl_shader_type);
+            void deleteShader();
             bool is_valid() const { return valid; }
             static bool link_shaders(unsigned int program_id);
         private:
