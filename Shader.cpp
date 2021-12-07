@@ -34,7 +34,7 @@ void Shader::init(const std::string file_path, ShaderType gl_shader_type) {
 
 void Shader::deleteShader() {
     glDetachShader(program_id, shader_id);
-    glDeleteShader(shader_id);
+    valid = false;
 }
 
 

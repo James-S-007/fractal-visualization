@@ -16,9 +16,20 @@ cmake --build .
 ```
 
 ## Navigating
+
+### Fractal Select Menu
+
+| Input | Function |
+| ----- | -------- |
+| 1 | Mandelbrot fractal with shaders |
+| 2 | Julia fractal with shaders |
+| 3 | Mandelbrot fractal with OpenMP |
+
+### Fractal Visualizer
+
 | Input | Function |
 | ----- | -------- |
 | Mouse Scroll Wheel | Zoom |
 | Left Mouse Click Drag | Pan |
 | r | Reset zoom and frame to origin |
-| esc | Quit program |
+| esc | Go to fractal select menu |
