@@ -1,34 +1,56 @@
+/* 
+Author: James Springer
+Class: ECE 4122
+Last Date Modified: 12/07/21 
+ 
+Description: Wrapper class for OpenGL shaders
+*/
+
 #pragma once
 
 #include <string>
 
 #include <GL/glew.h>  // includes typedefs for OpenGL
 
-    enum class ShaderType {
+    enum class ShaderType
+    {
         Vertex,
         Fragment,
         NONE
     };
 
-    class Shader {
+    class Shader
+    {
         public:
             // -methods- //
+
+            // Uninitialized constructor, not valid until init is successfully called
             Shader(unsigned int gl_program_id);
-            Shader(const std::string file_path, unsigned int gl_program_id, ShaderType gl_shader_type);
+            Shader(const std::string file_path, unsigned int gl_program_id, ShaderType gl_shaderType);
             ~Shader();
-            void init(const std::string file_path, ShaderType gl_shader_type);
-            void deleteShader();
-            bool is_valid() const { return valid; }
-            static bool link_shaders(unsigned int program_id);
+            bool isValid() const { return valid; }
+
+            // Initializes shader
+            void init(const std::string file_path, ShaderType gl_shaderType);  // performs necessary initializations
+            
+            // Detaches shader from current OpenGL instance
+            void deleteShader(); 
+
+            // Links all shaders with current program_id
+            static bool linkShaders(unsigned int program_id);
         private:
             // -members- //
             const unsigned int program_id;
-            ShaderType shader_type;
+            ShaderType shaderType;
             GLuint shader_id;
             bool valid;
 
             // -methods- //
-            std::string get_shader_from_file(const std::string file_path);
-            bool compile_shader(const std::string& shader_code);
+
+            // Loads code from file into shader string
+            std::string getShaderFromFile(const std::string file_path);
+
+            // Compile shader and check validity
+            bool compileShader(const std::string& shaderCode);
     };
     

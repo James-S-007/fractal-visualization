@@ -1,3 +1,11 @@
+/* 
+Author: James Springer
+Class: ECE 4122
+Last Date Modified: 12/07/21 
+ 
+Description: OpenGL fragment shader for Mandelbrot set
+*/
+
 #version 330 core
 in vec4 gl_FragCoord;
 
@@ -16,7 +24,8 @@ uniform int height;  // height of window
 #define MAX_MAG 4.0
 
 
-int calc_iterations() {
+int calcIterations()
+{
     float x = ((gl_FragCoord.x / float(width) - 0.5f) * zoom + frame_x) * 5.0;
     float y = ((gl_FragCoord.y / float(height) - 0.5f) * zoom + frame_y) * 5.0;
  
@@ -24,15 +33,17 @@ int calc_iterations() {
     float xc = x;
     float yc = y;
  
-    while (iterations < MAX_ITERATIONS) {
+    while (iterations < MAX_ITERATIONS)
+    {
         float x_temp = x;
         x = (x * x - y * y) + xc;
         y = (2.0f * x_temp * y) + yc;
          
         float mag_sq = x * x + y * y;
          
-        if (mag_sq > MAX_MAG) {
-            break;
+        if (mag_sq > MAX_MAG)
+        {
+            return iterations;
         }
  
         ++iterations;
@@ -41,8 +52,10 @@ int calc_iterations() {
     return iterations;
 }
  
-vec4 calc_color(int iterations) {
-    if (iterations == MAX_ITERATIONS) {
+vec4 calcColor(int iterations)
+{
+    if (iterations == MAX_ITERATIONS)
+    {
         gl_FragDepth = 0.0f;
         return vec4(0.0f, 0.0f, 0.0f, 1.0f);  // black default
     }
@@ -51,7 +64,8 @@ vec4 calc_color(int iterations) {
     return vec4(0.0f, color_scale, 0.0f, 1.0f);
 }
  
-void main() {
-    int iterations = calc_iterations();
-    frag_color = calc_color(iterations);
+void main()
+{
+    int iterations = calcIterations();
+    frag_color = calcColor(iterations);
 }
