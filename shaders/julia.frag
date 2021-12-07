@@ -9,12 +9,7 @@ uniform float frame_y;
 uniform int width;   // width of window
 uniform int height;  // height of window
 
-#define MAX_ITERATIONS 50
- 
-// mainly code from:
-// https://physicspython.wordpress.com/2020/02/16/visualizing-the-mandelbrot-set-using-opengl-part-1/
-
-#define MAX_ITERATIONS 50
+#define MAX_ITERATIONS 1000
 #define MAX_MAG 4.0
 
 

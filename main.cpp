@@ -55,52 +55,91 @@ int main() {
 
     // // Create OpenGL program and init shaders
     GLuint program_id = glCreateProgram();
-    // Shader vertex_shader("shaders/shader.vert", program_id, ShaderType::Vertex);
-    // Shader fragment_shader("shaders/mandelbrot.frag", program_id, ShaderType::Fragment);
-    // if (!(vertex_shader.is_valid() && fragment_shader.is_valid())) {
-    //     std::cerr << "Shader initialization failed, exiting..." << std::endl;
-    //     return EXIT_FAILURE;  // exit if either shader failed during initialization
-    // }
-
-    // // Attempt to link program
-    // bool success = Shader::link_shaders(program_id);
-    // if (!success) {
-    //     std::cerr << "Failed to link shaders, exiting..." << std::endl;
-    //     return EXIT_FAILURE;  // exit if failed to link shaders with program
-    // }
 
     // Define uniforms
     WindowState window_state(program_id, window.getSize().x, window.getSize().y);
-
     while (window_state.window_active) {
         sf::Event event;
-        bool event_present = false;
-        while (window.pollEvent(event)) {
-            event_present = window_state.handle_event(event);
+
+        // mode select
+        FractalMode mode;
+        bool active = false;
+        while (!active) {
+            while(window.pollEvent(event)) {
+                mode = window_state.mode_select(event);
+                if (mode != FractalMode::NONE || !window_state.window_active) {
+                    active = true;
+                    break;
+                }
+            }
         }
 
-        if (event_present) {
-            // omp::mandelbrot_set(window_state.window_x, window_state.window_y, window_state.zoom, window_state.frame_x, window_state.frame_y);
-            omp::display(window_state.window_x, window_state.window_y, window_state.zoom, window_state.frame_x, window_state.frame_y);
-        } else {
+        // init structures
+        Shader vertex_shader(program_id);
+        Shader fragment_shader(program_id);
+        switch (mode) {
+            case FractalMode::SHADER_MANDELBROT:
+                fragment_shader.init("shaders/mandelbrot.frag", ShaderType::Fragment);
+                break;
+            case FractalMode::SHADER_JULIA:
+                fragment_shader.init("shaders/julia.frag", ShaderType::Fragment);
+                break;
+            default:
+                break;
+        }
+
+        if (mode == FractalMode::SHADER_MANDELBROT || mode == FractalMode::SHADER_JULIA) {
+            vertex_shader.init("shaders/shader.vert", ShaderType::Vertex);
+            if (!(vertex_shader.is_valid() && fragment_shader.is_valid())) {
+                std::cerr << "Shader initialization failed, exiting..." << std::endl;
+                return EXIT_FAILURE;  // exit if either shader failed during initialization
+            }
+
+            // Attempt to link program
+            bool success = Shader::link_shaders(program_id);
+            if (!success) {
+                std::cerr << "Failed to link shaders, exiting..." << std::endl;
+                return EXIT_FAILURE;  // exit if failed to link shaders with program
+            }
+
+            window_state.shaders_init = true;
+            window_state.update_frame_uniforms();
+            window_state.update_window_size_uniforms();
+            if (mode == FractalMode::OPENMP_MANDELBROT) {
+                vertex_shader.deleteShader();
+                fragment_shader.deleteShader();
+            }
+        }
+
+        window_state.fractal_view = true;
+        while (window_state.fractal_view) {
+            while (window.pollEvent(event)) {
+                window_state.handle_event(event);
+            }
+
+            switch (mode) {
+                case FractalMode::SHADER_MANDELBROT:
+                case FractalMode::SHADER_JULIA: {
+                    glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
+                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear buffers
+                    glBindVertexArray(VAO);
+                    glUseProgram(program_id);
+                    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+                    break;
+                }
+                case FractalMode::OPENMP_MANDELBROT:
+                    omp::display(window_state.window_x, window_state.window_y, window_state.zoom, window_state.frame_x, window_state.frame_y);
+                    break;
+            }
             
-
-
-        // glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear buffers
-
-        // glBindVertexArray(VAO);
-        // glUseProgram(program_id);
-        // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+            window.display();
         }
-        
-        window.display();
     }
 
     // Release resources
-    // glDeleteBuffers(1, &VBO);
-    // glDeleteBuffers(1, &VAO);
-    // glDeleteBuffers(1, &EBO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &VAO);
+    glDeleteBuffers(1, &EBO);
     glDeleteProgram(program_id);
     program_id = 0;
 

@@ -4,6 +4,8 @@
 
 #include "Shader.h"
 
+Shader::Shader(unsigned int gl_program_id) : program_id(gl_program_id), shader_type(ShaderType::NONE), valid(false) {}
+
 Shader::Shader(const std::string file_path, unsigned int gl_program_id, ShaderType gl_shader_type) : program_id(gl_program_id), shader_type(gl_shader_type), valid(false) {
     const std::string shader_code = get_shader_from_file(file_path);
     if (!shader_code.empty()) {
@@ -15,6 +17,22 @@ Shader::Shader(const std::string file_path, unsigned int gl_program_id, ShaderTy
 }
 
 Shader::~Shader() {
+    glDetachShader(program_id, shader_id);
+    glDeleteShader(shader_id);
+}
+
+void Shader::init(const std::string file_path, ShaderType gl_shader_type) {
+    shader_type = gl_shader_type;  
+    const std::string shader_code = get_shader_from_file(file_path);
+    if (!shader_code.empty()) {
+        bool success = compile_shader(shader_code);
+        if (success) {
+            valid = true;
+        }
+    }  
+}
+
+void Shader::deleteShader() {
     glDetachShader(program_id, shader_id);
     glDeleteShader(shader_id);
 }

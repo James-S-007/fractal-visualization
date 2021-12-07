@@ -24,6 +24,7 @@ add_dependencies(Tetra OpenGL::OpenGL)
 add_library(Shader STATIC ${PROJECT_SOURCE_DIR}/Shader.cpp)
 add_library(Omp STATIC ${PROJECT_SOURCE_DIR}/Mandelbrot/mandelbrot_omp.cpp)
 
+target_link_libraries(Omp GLU)
 target_link_libraries(Fractal_Visualization Shader Omp sfml-graphics OpenGL::OpenGL GLEW)
 target_link_libraries(Tetra OpenGL::OpenGL GLEW ${GLUT_LIBRARY})
 
