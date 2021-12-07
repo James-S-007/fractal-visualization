@@ -27,8 +27,8 @@ int calcIterations()
     float y = ((gl_FragCoord.y / float(height) - 0.5f) * zoom + frame_y) * 5.0;
  
     int iterations = 0;
-    float xc = -0.4;
-    float yc = 0.6;
+    float xc = .355534;
+    float yc = -0.337292;
  
     while (iterations < MAX_ITERATIONS)
     {
