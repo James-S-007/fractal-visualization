@@ -154,6 +154,9 @@ int main()
                 case FractalMode::OPENMP_MANDELBROT:
                     omp::display(windowState.window_x, windowState.window_y, windowState.zoom, windowState.frame_x, windowState.frame_y);
                     break;
+                case FractalMode::NONE:
+                    windowState.fractalView = false;
+                    break;
             }
             
             window.display();

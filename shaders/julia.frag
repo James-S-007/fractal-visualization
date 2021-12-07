@@ -58,7 +58,7 @@ vec4 calcColor(int iterations)
     }
  
     float color_scale = float(iterations) / MAX_ITERATIONS;  // scale on [0,1]
-    return vec4(0.0f, color_scale, 0.0f, 1.0f);
+    return vec4(color_scale, 0.0f, 0.0f, 1.0f);
 }
  
 void main()
