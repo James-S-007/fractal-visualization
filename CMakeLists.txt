@@ -22,5 +22,6 @@ target_link_libraries(Fractal_Visualization Shader sfml-graphics OpenGL::OpenGL 
 target_link_libraries(Tetra OpenGL::OpenGL GLEW ${GLUT_LIBRARY})
 
 file(COPY ${PROJECT_SOURCE_DIR}/shaders/shader.vert DESTINATION ${PROJECT_BINARY_DIR}/shaders)  # copy shaders to build directory
-file(COPY ${PROJECT_SOURCE_DIR}/shaders/shader.frag DESTINATION ${PROJECT_BINARY_DIR}/shaders)
+file(COPY ${PROJECT_SOURCE_DIR}/shaders/mandelbrot.frag DESTINATION ${PROJECT_BINARY_DIR}/shaders)
+file(COPY ${PROJECT_SOURCE_DIR}/shaders/julia.frag DESTINATION ${PROJECT_BINARY_DIR}/shaders)
 
