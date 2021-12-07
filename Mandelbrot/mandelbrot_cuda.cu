@@ -17,11 +17,17 @@ static int dim = 512;
 GLuint width = dim, height = dim;
 static int n = 512;
 static int m = 512;
-static int max_iter = 100;
+static int max_iter = 10000;
+double xcen = -0.5;
+double ycen = 0;
+double scale = 3;
 
-void flush_display();
+void display();
 void reshape(int width, int height);
 void draw_point(int i, int j, int k);
+void special(int key, int x, int y);
+void mouse(int button, int state, int x, int y);
+//void idle();
 
 /* the mandelbrot set is defined as all complex numbers c such that the 
    equation z = z^2 + c remains bounded. In practice, we calculate max_iter
@@ -111,18 +117,17 @@ void display_double(double xcen, double ycen, double scale, uint32_t *dev_counts
 
 int main(int argc, char** argv)
 {
-	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize(width, height);
 	glutInitWindowPosition(100, 100);
 	glutInit(&argc, argv);
 
 	window = glutCreateWindow("OpenGL Mandelbrot Fractal Set");
 	glutReshapeFunc(reshape);
-	glutDisplayFunc(flush_display);
+	glutDisplayFunc(display);
+    glutSpecialFunc(special);
+    glutMouseFunc(mouse);
     cudaError_t err = cudaSuccess;
-    double xcen = -0.5;
-    double ycen = 0;
-    double scale = 3;
 
     uint32_t *dev_counts = NULL;
     size_t img_size = dim * dim * sizeof(uint32_t);
@@ -134,7 +139,6 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
     display_double(xcen, ycen, scale, dev_counts);
-
 	glutMainLoop();
     cudaFree(dev_counts);
 	return 0;
@@ -149,9 +153,9 @@ void set_color(int color)
 	else
 	{
         // TODO: Set different colors
-        //float freq = 6.3 / max_iter;
-        //glColor3f((sin(freq * color + 3)),sin(freq * color + 5),sin(freq * color + 1));
-		glColor3f((double)color / 100.0, (double)color / 100.0, (double)color / 100.0);
+        float freq = 6.3 / max_iter;
+        glColor3f((sin(freq * color + 3)),sin(freq * color + 5),sin(freq * color + 1));
+		//glColor3f((double)color / 100.0, (double)color / 100.0, (double)color / 100.0);
 	}
 }
 
@@ -163,10 +167,77 @@ void draw_point(int i, int j, int color) {
 	glEnd();
 }
 
-void flush_display()
-{
-	glFlush();
+void mouse(int button, int state, int x, int y) {
+	// Wheel reports as button 3(scroll up) and button 4(scroll down)
+   if ((button == 3) || (button == 4)) // It's a wheel event
+   {
+       // Each wheel event reports like a button click, GLUT_DOWN then GLUT_UP
+       if (state == GLUT_UP) return; // Disregard redundant GLUT_UP events
+	   if (button == 3)
+	   {
+			scale *= 0.80;
+	   }
+	   else 
+	   {
+			scale *= 1.25;
+	   }
+   }
+   display();
 }
+
+
+void special(int key, int x, int y) {
+	switch (key) {
+		case GLUT_KEY_UP:
+			ycen -= 20 * scale / dim;
+			break;
+		case GLUT_KEY_DOWN:
+			ycen += 20 * scale / dim;
+			break;
+		case GLUT_KEY_RIGHT:
+			xcen += 20 * scale / dim;
+			break;
+		case GLUT_KEY_LEFT:
+			xcen -= 20 * scale / dim;
+			break;
+	}
+}
+
+void display()
+{
+	glViewport(0, 0, width, height);
+	
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0, width, 0, height);
+	glMatrixMode(GL_MODELVIEW);	
+	glLoadIdentity();
+
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glPointSize(1.0);
+
+    cudaError_t err = cudaSuccess;
+
+    uint32_t *dev_counts = NULL;
+    size_t img_size = dim * dim * sizeof(uint32_t);
+    err = cudaMalloc(&dev_counts, img_size);
+
+    if (err != cudaSuccess)
+    {
+        fprintf(stderr,"Failed to allocate dev_counts\n");
+        exit(EXIT_FAILURE);
+    }
+    display_double(xcen, ycen, scale, dev_counts);
+
+	glutSwapBuffers();
+	glutPostRedisplay();
+}
+
+/* void idle()
+{
+    glutPostRedisplay();
+} */
 
 void reshape(int w, int h)
 {
@@ -184,9 +255,6 @@ void reshape(int w, int h)
 	glPointSize(1.0);
 
     cudaError_t err = cudaSuccess;
-    double xcen = -0.5;
-    double ycen = 0;
-    double scale = 3;
 
     uint32_t *dev_counts = NULL;
     size_t img_size = dim * dim * sizeof(uint32_t);
