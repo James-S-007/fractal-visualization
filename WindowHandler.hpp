@@ -1,10 +1,9 @@
 #pragma once
 
-#include <algorithm>
-
 #include <GL/glew.h>
 #include <SFML/OpenGL.hpp>
 #include <SFML/Graphics.hpp>
+
 
 struct WindowState {
     public: 
@@ -29,25 +28,30 @@ struct WindowState {
             this->update_window_size_uniforms();
         }
 
-        void handle_event(const sf::Event& event) {
+        bool handle_event(const sf::Event& event) {
             if (event.type == sf::Event::Closed || (event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)) {
                 window_active = false;  // end program
+                return true;
             } else if (event.type == sf::Event::Resized) {
                 window_x = event.size.width;
                 window_y = event.size.height;
                 glViewport(0, 0, window_x, window_y);  // adjust window size
                 this->update_window_size_uniforms();
+                return true;
             } else if (event.type == sf::Event::MouseWheelScrolled) {
                 zoom = zoom * (1 - .07 * event.mouseWheelScroll.delta);
                 zoom = (zoom > 1.0f) ? 1.0f : zoom;
                 zoom = (zoom < .00001f) ? .00001f: zoom;
                 this->update_frame_uniforms();
+                return true;
             } else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Button::Left) {
                 panning = true;
                 mouse_x = event.mouseButton.x;
                 mouse_y = event.mouseButton.y;
+                return true;
             } else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Button::Left) {
                 panning = false;
+                return true;
             } else if (event.type == sf::Event::MouseMoved && panning) {
                 frame_x += (mouse_x - event.mouseMove.x) / float(window_x) * zoom;  // TODO(James): make depenendent on window size
                 frame_y += (event.mouseMove.y - mouse_y) / float(window_y) * zoom;
@@ -58,12 +62,16 @@ struct WindowState {
                 mouse_x = event.mouseMove.x;
                 mouse_y = event.mouseMove.y;
                 this->update_frame_uniforms();
+                return true;
             } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::R) {
                 zoom = 1; // reset zoom and frame
                 frame_x = 0;
                 frame_y = 0;
                 this->update_frame_uniforms();
+                return true;
             }
+
+            return false;
         }
 
         void update_frame_uniforms() {
