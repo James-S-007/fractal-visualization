@@ -52,7 +52,7 @@ struct WindowState
         // Handles events in main menu mode
         FractalMode modeSelect(const sf::Event& event)
         {
-            if (event.type == sf::Event::Closed || (event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape))
+            if (event.type == sf::Event::Closed || ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)))
             {
                 windowActive = false;  // end program
             }
@@ -75,7 +75,7 @@ struct WindowState
         // Handles event in fractal visualization view (zoom, pan, window resize, return to main menu)
         void handleEvent(const sf::Event& event)
         {
-            if (event.type == sf::Event::Closed || (event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape))
+            if (event.type == sf::Event::Closed || ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)))
             {
                 fractalView = false;  // end program
             }
@@ -105,7 +105,7 @@ struct WindowState
             }
             else if (event.type == sf::Event::MouseMoved && panning)
             {
-                frame_x += (mouse_x - event.mouseMove.x) / float(window_x) * zoom;  // TODO(James): make depenendent on window size
+                frame_x += (mouse_x - event.mouseMove.x) / float(window_x) * zoom; 
                 frame_y += (event.mouseMove.y - mouse_y) / float(window_y) * zoom;
                 frame_x = (frame_x > 1.0f) ? 1.0f : frame_x;
                 frame_x = (frame_x < -1.0f) ? -1.0f : frame_x;

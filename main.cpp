@@ -1,5 +1,5 @@
 /* 
-Author: James Springer
+Author: James Springer & Jackson Crandell
 Class: ECE 4122
 Last Date Modified: 12/07/21 
  

@@ -1,4 +1,15 @@
-//nvcc mandelbrot_cuda.cu -lglut -lGL -lGLU -lGLEW -lgomp && time ./a.out
+
+/* 
+Author: Jackson Crandell
+Class: ECE 4122
+Last Date Modified: 12/07/21 
+ 
+Description: Mandelbrot set with CUDA optimization.
+
+Reference: http://selkie.macalester.edu/csinparallel/modules/CUDAArchitecture/build/html/1-Mandelbrot/Mandelbrot.html
+*/
+
+//nvcc mandelbrot_cuda.cu -lglut -lGL -lGLU -lGLEW -lgomp
 
 #include <fstream>
 #include <iostream>
@@ -13,50 +24,73 @@
 
 GLuint window;
 
+// Must be square window
+// Preferable a window that is a multiple of 32, otherwise it may not work
 static int dim = 512;
 GLuint width = dim, height = dim;
 static int n = 512;
 static int m = 512;
-static int max_iter = 10000;
-double xcen = -0.5;
-double ycen = 0;
+static int max_iter = 1000;
+double frame_x = -0.5;
+double frame_y = 0;
 double scale = 3;
+
+int lastx = 0;
+int lasty = 0;
 
 void display();
 void reshape(int width, int height);
 void draw_point(int i, int j, int k);
 void special(int key, int x, int y);
 void mouse(int button, int state, int x, int y);
-//void idle();
 
-/* the mandelbrot set is defined as all complex numbers c such that the 
-   equation z = z^2 + c remains bounded. In practice, we calculate max_iter
-   iterations of this formula and if the magnitude of z is < 2 we assume it
-   is in the set. The greater max_iters the more accurate our representation */
-__device__ uint32_t mandel_double(double cr, double ci, int max_iter) {
-    double zr = 0;
-    double zi = 0;
-    double zrsqr = 0;
-    double zisqr = 0;
+
+
+/**
+ * Cuda kernel function that calculates if a number is in the Mandelbrot set. 
+ * This is defined by as any complex number, c, such that z = z^2 + c remains bounded.
+ * For our purpose, we find if the magnitude of the number is < 2 then it is in the set. 
+ * More iterations results in higher accuracy.
+ *
+ * @param n - holds number of points to calculate
+ * @param h - holds heat calculates
+ * @param g - temp array to hold heat calculations
+ * 
+ */
+__device__ uint32_t mandelbrot_set(double cr, double ci, int max_iter) {
+    double real = 0;
+    double imag = 0;
+    double realsqr = 0;
+    double imagsqr = 0;
 
     uint32_t i;
 
     for (i = 0; i < max_iter; i++){
-		zi = zr * zi;
-		zi += zi;
-		zi += ci;
-		zr = zrsqr - zisqr + cr;
-		zrsqr = zr * zr;
-		zisqr = zi * zi;
+		imag = real * imag;
+		imag += imag;
+		imag += ci;
+		real = realsqr - imagsqr + cr;
+		realsqr = real * real;
+		imagsqr = imag * imag;
 		
-    //the fewer iterations it takes to diverge, the farther from the set
-		if (zrsqr + zisqr > 4.0) break;
+		if (realsqr + imagsqr > 4.0) break;
     }
 	
     return i;
 }
 
-/* turn each x y coordinate into a complex number and run the mandelbrot formula on it */
+/**
+ * Cuda kernel function that turns each (x,y) coordinate into a complex number.
+ * The it runs the mandel_double kernel.
+ *
+ * @param counts holds pixel values
+ * @param xmin minimum x value of screen
+ * @param ymin minimum y value of screen
+ * @param step size to move left and right by. Needed when zooming in
+ * @param max_iter number of iterations to run until. (Higher iterations lead to higher accuracy)
+ * @param dim dimension of window
+ * 
+ */
 __global__ void mandel_kernel(uint32_t *counts, double xmin, double ymin, double step, int max_iter, int dim) {
     int pix_per_thread = dim * dim / (gridDim.x * blockDim.x);
     int tId = blockDim.x * blockIdx.x + threadIdx.x;
@@ -66,7 +100,7 @@ __global__ void mandel_kernel(uint32_t *counts, double xmin, double ymin, double
         int y = i / dim;
         double cr = xmin + x * step;
         double ci = ymin + y * step;
-        counts[y * dim + x]  = mandel_double(cr, ci, max_iter);
+        counts[y * dim + x]  = mandelbrot_set(cr, ci, max_iter);
     }
     if (gridDim.x * blockDim.x * pix_per_thread < dim * dim && tId < (dim * dim) - (blockDim.x * gridDim.x)){
         int i = blockDim.x * gridDim.x * pix_per_thread + tId;
@@ -74,17 +108,27 @@ __global__ void mandel_kernel(uint32_t *counts, double xmin, double ymin, double
         int y = i / dim;
         double cr = xmin + x * step;
         double ci = ymin + y * step;
-        counts[y * dim + x]  = mandel_double(cr, ci, max_iter);
+        counts[y * dim + x]  = mandelbrot_set(cr, ci, max_iter);
     }
     
 }
 
-void display_double(double xcen, double ycen, double scale, uint32_t *dev_counts)
+/**
+ * Cuda kernel function that turns each (x,y) coordinate into a complex number.
+ * The it runs the mandel_double kernel.
+ *
+ * @param frame_x controls where to render fractal in x -changed via panning
+ * @param frame_y controls where to render fractal in y-changed via panning
+ * @param scale scaling factor of fractal 
+ * @param dev_counts 
+ * 
+ */
+void display_mandelbrot(double frame_x, double frame_y, double scale, uint32_t *dev_counts)
 {
     double start = omp_get_wtime();
     dim3 numBlocks(dim,dim);
-    double xmin = xcen - (scale/2);
-    double ymin = ycen - (scale/2);
+    double xmin = frame_x - (scale/2);
+    double ymin = frame_y - (scale/2);
     double step = scale / dim;
     cudaError_t err = cudaSuccess;
     mandel_kernel<<<n, m>>>(dev_counts, xmin , ymin, step, max_iter, dim);
@@ -114,52 +158,30 @@ void display_double(double xcen, double ycen, double scale, uint32_t *dev_counts
     }
 }
 
-
-int main(int argc, char** argv)
-{
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-	glutInitWindowSize(width, height);
-	glutInitWindowPosition(100, 100);
-	glutInit(&argc, argv);
-
-	window = glutCreateWindow("OpenGL Mandelbrot Fractal Set");
-	glutReshapeFunc(reshape);
-	glutDisplayFunc(display);
-    glutSpecialFunc(special);
-    glutMouseFunc(mouse);
-    cudaError_t err = cudaSuccess;
-
-    uint32_t *dev_counts = NULL;
-    size_t img_size = dim * dim * sizeof(uint32_t);
-    err = cudaMalloc(&dev_counts, img_size);
-
-    if (err != cudaSuccess)
-    {
-        fprintf(stderr,"Failed to allocate dev_counts\n");
-        exit(EXIT_FAILURE);
-    }
-    display_double(xcen, ycen, scale, dev_counts);
-	glutMainLoop();
-    cudaFree(dev_counts);
-	return 0;
-}
-
+/**
+ * Assigns a color based returned iteration.
+ *
+ * @param color represents the iteration returned.
+ * 
+ */
 void set_color(int color)
 {
+    // Set color to black if number is in max iter
 	if (color == max_iter)
 	{
 		glColor3f(0, 0, 0);
 	}
 	else
 	{
-        // TODO: Set different colors
         float freq = 6.3 / max_iter;
-        glColor3f((sin(freq * color + 3)),sin(freq * color + 5),sin(freq * color + 1));
-		//glColor3f((double)color / 100.0, (double)color / 100.0, (double)color / 100.0);
+        glColor3f((sin(freq * color + 5)),sin(freq * color + 3),sin(freq * color + 1));
 	}
 }
 
-
+/**
+ * Draw the point on the screen.
+ * 
+ */
 void draw_point(int i, int j, int color) {
 	glBegin(GL_POINTS);
 	set_color(color);
@@ -167,6 +189,15 @@ void draw_point(int i, int j, int color) {
 	glEnd();
 }
 
+/**
+ * Handles mouse input. Use the scroll wheel to zoom in and out
+ * of the scene
+ * 
+ * @param button holds the different mouse inputs (i.e. scroll wheel in our case)
+ * @param x holds mouse x location when key is pushed
+ * @param y holds mouse y location when key is pushed
+ * 
+ */
 void mouse(int button, int state, int x, int y) {
 	// Wheel reports as button 3(scroll up) and button 4(scroll down)
    if ((button == 3) || (button == 4)) // It's a wheel event
@@ -182,27 +213,42 @@ void mouse(int button, int state, int x, int y) {
 			scale *= 1.25;
 	   }
    }
-   display();
+
+    // Panning
+    lastx = x;
+    lasty = y;
+    display();
 }
 
-
+/**
+ * Handles keyboard input. Use the arrow keys to control the camera to 
+ * simulate the tetrahedron moving.
+ * 
+ * @param key holds value of key pushed
+ * @param x holds mouse x location when key is pushed
+ * @param y holds mouse y location when key is pushed
+ * 
+ */
 void special(int key, int x, int y) {
 	switch (key) {
 		case GLUT_KEY_UP:
-			ycen -= 20 * scale / dim;
+			frame_y -= 20 * scale / dim;
 			break;
 		case GLUT_KEY_DOWN:
-			ycen += 20 * scale / dim;
+			frame_y += 20 * scale / dim;
 			break;
 		case GLUT_KEY_RIGHT:
-			xcen += 20 * scale / dim;
+			frame_x += 20 * scale / dim;
 			break;
 		case GLUT_KEY_LEFT:
-			xcen -= 20 * scale / dim;
+			frame_x -= 20 * scale / dim;
 			break;
 	}
 }
 
+/**
+ * Displays Mandelbrot set.
+ */
 void display()
 {
 	glViewport(0, 0, width, height);
@@ -228,16 +274,11 @@ void display()
         fprintf(stderr,"Failed to allocate dev_counts\n");
         exit(EXIT_FAILURE);
     }
-    display_double(xcen, ycen, scale, dev_counts);
+    display_mandelbrot(frame_x, frame_y, scale, dev_counts);
 
 	glutSwapBuffers();
 	glutPostRedisplay();
 }
-
-/* void idle()
-{
-    glutPostRedisplay();
-} */
 
 void reshape(int w, int h)
 {
@@ -265,7 +306,60 @@ void reshape(int w, int h)
         fprintf(stderr,"Failed to allocate dev_counts\n");
         exit(EXIT_FAILURE);
     }
-    display_double(xcen, ycen, scale, dev_counts);
+    display_mandelbrot(frame_x, frame_y, scale, dev_counts);
 
 }
 
+/**
+ * Handles mouse input to allow for panning.
+ * 
+ * @param key holds value of key pushed
+ * @param x holds mouse x location when key is pushed
+ * @param y holds mouse y location when key is pushed
+ * 
+ */
+void mouseMovement(int x, int y)
+{
+    int diffx = x - lastx; 
+    int diffy = y - lasty; 
+    lastx = x;
+    lasty = y;
+    diffx = (diffx > 1.0f) ? 1.0f : diffx;
+    diffx = (diffx < -1.0f) ? -1.0f : diffx;
+    diffy = (diffy > 1.0f) ? 1.0f : diffy;
+    diffy = (diffy < -1.0f) ? -1.0f : diffy;
+	frame_y -= diffy * 10 * scale / dim;
+	frame_x -= diffx * 10 * scale / dim;
+}
+
+
+
+int main(int argc, char** argv)
+{
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+	glutInitWindowSize(width, height);
+	glutInitWindowPosition(100, 100);
+	glutInit(&argc, argv);
+
+	window = glutCreateWindow("OpenGL Mandelbrot Fractal Set");
+	glutReshapeFunc(reshape);
+	glutDisplayFunc(display);
+    glutSpecialFunc(special);
+    glutMouseFunc(mouse);
+    glutMotionFunc(mouseMovement);
+    cudaError_t err = cudaSuccess;
+
+    uint32_t *dev_counts = NULL;
+    size_t img_size = dim * dim * sizeof(uint32_t);
+    err = cudaMalloc(&dev_counts, img_size);
+
+    if (err != cudaSuccess)
+    {
+        fprintf(stderr,"Failed to allocate dev_counts\n");
+        exit(EXIT_FAILURE);
+    }
+    display_mandelbrot(frame_x, frame_y, scale, dev_counts);
+	glutMainLoop();
+    cudaFree(dev_counts);
+	return 0;
+}

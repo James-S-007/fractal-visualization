@@ -17,9 +17,18 @@ Description: Mandelbrot implementation via OpenMP
 namespace omp {
 
 constexpr double eps = 2, umin = -2.2, umax = 0.7, vmin = -1.2, vmax = 1.2;
-int colors[MAX_WINDOW_X][MAX_WINDOW_Y];
+int colors[MAX_WINDOW_X*MAX_WINDOW_Y];
 
-
+/**
+ * Display function called in the main.cpp
+ *
+ * @param width of screen
+ * @param height of screen
+ * @param zoom scaling factor of fractal 
+ * @param frame_x controls where to render fractal in x -changed via panning
+ * @param frame_y controls where to render fractal in y-changed via panning
+ * 
+ */
 void display(int width, int height, float zoom, float frame_x, float frame_y)
 {
 	glMatrixMode(GL_PROJECTION);
@@ -37,6 +46,17 @@ void display(int width, int height, float zoom, float frame_x, float frame_y)
 }
 
 
+/**
+ * Display function called by display which calls getIterations to see if number
+ * is within the mandelbrot set.
+ *
+ * @param width of screen
+ * @param height of screen
+ * @param zoom scaling factor of fractal 
+ * @param frame_x controls where to render fractal in x -changed via panning
+ * @param frame_y controls where to render fractal in y-changed via panning
+ * 
+ */
 void mandelbrotSet(int width, int height, float zoom, float frame_x, float frame_y)
 {
 	int minDim = (width < height) ? width : height;  // prevents stretching
@@ -44,18 +64,30 @@ void mandelbrotSet(int width, int height, float zoom, float frame_x, float frame
 	for (int ix = 0; ix < width; ++ix)
 		for (int iy = 0; iy < height; ++iy)
 		{
-			colors[ix][iy] = getIterations(ix, iy, minDim, minDim, zoom, frame_x, frame_y);
+			colors[ix * width + iy] = getIterations(ix, iy, minDim, minDim, zoom, frame_x, frame_y);
 		}
 	for (int i = 0; i < width; ++i)
     {
         for (int j = 0; j < height; ++j)
 		{
-			drawPoint(i, j, height, colors[i][j]);
+			drawPoint(i, j, height, colors[i* width + j]);
 		} 
     } 
 }
 
-
+/**
+ * Finds if a number is in the Mandelbrot set. 
+ * This is defined by as any complex number, c, such that z = z^2 + c remains bounded.
+ * For our purpose, we find if the magnitude of the number is < 2 then it is in the set. 
+ * More iterations results in higher accuracy. If it is in the set it will return the number of iterations.
+ *
+ * @param width of screen
+ * @param height of screen
+ * @param zoom scaling factor of fractal 
+ * @param frame_x controls where to render fractal in x -changed via panning
+ * @param frame_y controls where to render fractal in y-changed via panning
+ * 
+ */
 int getIterations(int i, int j, int width, int height, float zoom, float frame_x, float frame_y) 
 {
 	float real = ((i / float(width) - 0.5f) * zoom + frame_x) * 5.0;
@@ -84,7 +116,10 @@ int getIterations(int i, int j, int width, int height, float zoom, float frame_x
     return iterations;
 }
 
-
+/**
+ * Draw the point on the screen.
+ * 
+ */
 void drawPoint(int i, int j, int height, int color)
 {
 	glBegin(GL_POINTS);
@@ -93,7 +128,12 @@ void drawPoint(int i, int j, int height, int color)
 	glEnd();
 }
 
-
+/**
+ * Assigns a color based returned iteration.
+ *
+ * @param color represents the iteration returned.
+ * 
+ */
 void setColor(int color)
 {
 	if (color == MAX_ITERATIONS)

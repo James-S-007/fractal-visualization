@@ -1,4 +1,5 @@
 # C++ Fractal Visualization with OpenGL and SFML
+By: Jackson Crandell & James Springer
 
 ## Dependencies
 | Package    | Install Cmd                       |

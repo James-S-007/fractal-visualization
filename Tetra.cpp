@@ -1,8 +1,18 @@
+
+/* 
+Author: Jackson Crandell
+Class: ECE 4122
+Last Date Modified: 12/07/21 
+ 
+Description: Renders Sierpinski Tetrahedron in OpenGL
+*/
+
 #include <GL/glut.h>
 #include <cstdlib>
 #include <ctime>
 #include <stdio.h>
 
+// Funcation prototypes
 void display();
 void zoomIn();
 
@@ -19,6 +29,16 @@ int iterations = 5;
 double zoom = 0;
 int shading = GL_SMOOTH;
 
+/**
+ * Creates a tetrahedron by drawing four triangular faces.
+ * 
+ * 
+ * @param *a sets vertex
+ * @param *b sets vertex
+ * @param *c sets vertex
+ * @param *d sets vertex
+ * 
+ */
 void drawTetra(GLfloat *a, GLfloat *b, GLfloat *c, GLfloat *d) {
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);	
 	glShadeModel(shading);
@@ -60,7 +80,15 @@ void drawTetra(GLfloat *a, GLfloat *b, GLfloat *c, GLfloat *d) {
 	glEnd();
 }
 
-
+/**
+ * Divides triangle lengths to find midpoint to draw next triangle.
+ * 
+ * @param V1 sets (x,y) of vertex
+ * @param V2 sets (x,y) of vertex
+ * @param V3 sets (x,y) of vertex
+ * @param V4 sets (x,y) of vertex
+ * 
+ */
 void divideTetra(GLfloat V1[],GLfloat V2[],GLfloat V3[],GLfloat V4[],int iterations)
 {
     GLfloat V12[3],V23[3],V31[3],V14[3],V24[3],V34[3];
@@ -96,6 +124,15 @@ void divideTetra(GLfloat V1[],GLfloat V2[],GLfloat V3[],GLfloat V4[],int iterati
 	}
 }
 
+/**
+ * Handles keyboard input. If you press, '=' then the number of iterations redered will increase by 10.
+ * If you press '-' then the number of iterations will decrease by 10.
+ * 
+ * @param key holds value of key pushed
+ * @param x holds mouse x location when key is pushed
+ * @param y holds mouse y location when key is pushed
+ * 
+ */
 void keyboard(unsigned char key, int x, int y) {
 	switch (key) {
 		case '=':
@@ -118,6 +155,15 @@ void keyboard(unsigned char key, int x, int y) {
 	}
 }
 
+/**
+ * Handles keyboard input. Use the arrow keys to control the camera to 
+ * simulate the tetrahedron moving.
+ * 
+ * @param key holds value of key pushed
+ * @param x holds mouse x location when key is pushed
+ * @param y holds mouse y location when key is pushed
+ * 
+ */
 void special(int key, int x, int y) {
 	switch (key) {
 		case GLUT_KEY_UP:
@@ -135,6 +181,15 @@ void special(int key, int x, int y) {
 	}
 }
 
+/**
+ * Handles mouse input. Use the scroll wheel to zoom in and out
+ * of the scene
+ * 
+ * @param button holds the different mouse inputs (i.e. scroll wheel in our case)
+ * @param x holds mouse x location when key is pushed
+ * @param y holds mouse y location when key is pushed
+ * 
+ */
 void mouse(int button, int state, int x, int y) {
 	// Wheel reports as button 3(scroll up) and button 4(scroll down)
    if ((button == 3) || (button == 4)) // It's a wheel event
@@ -154,6 +209,10 @@ void mouse(int button, int state, int x, int y) {
    }
 }
 
+
+/**
+ * Controls zooming in and out of the scene
+ */
 void zoomIn() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -162,6 +221,9 @@ void zoomIn() {
 	display();
 }
 
+/**
+ * Displays tetrahedron.
+ */
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();
@@ -175,6 +237,9 @@ void display() {
 	glutPostRedisplay();
 }
 
+/**
+ * Sets initial values for openGL
+ */
 void init() {
 	glColor3f(0.0, 0.0, 0.0);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
